@@ -1,0 +1,26 @@
+resource_types:
+- name: rt0
+  type: docker-image
+  source:
+    repository: thaniyarasu/pr
+
+resources:
+- name: r0
+  type: rt0
+  source:
+    bitbucket: true
+    repo: {{bb-repo}}
+    user: {{bb-un}}
+    access_token: {{bb-to}}
+
+jobs:
+- name: j0
+  plan:
+  - get: r0
+    trigger: true
+  - put: r0
+    params:
+      status: success
+      path: r0
+      merge:
+        method: squash

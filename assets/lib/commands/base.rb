@@ -5,15 +5,31 @@ require 'faraday'
 ::Faraday.default_adapter = :httpclient
 
 require 'octokit'
+require 'bitbucket_rest_api'
 require_relative '../input'
 
+Hashie.logger = Logger.new(nil)
 module Commands
   class Base
     attr_reader :input
+    @@bb = @@user = @@repo = nil
 
     def initialize(input: Input.instance)
       @input = input
-      setup_octokit
+      if input.source.bitbucket
+        @@bb = setup_bitbucket
+      else
+        setup_octokit
+      end
+    end
+    def self.bb
+      @@bb
+    end
+    def self.user
+      @@user
+    end
+    def self.repo
+      @@repo
     end
 
     private
@@ -26,5 +42,12 @@ module Commands
         c.access_token = input.source.access_token
       end
     end
+
+    def setup_bitbucket
+      @@user, @@repo = input.source.repo.split("/")
+      BitBucket.connection_options[:ssl] = { verify: false } if input.source.no_ssl_verify
+      BitBucket.new(basic_auth: [input.source.user, input.source.access_token].join(':')) #'login:token'
+    end
+
   end
 end

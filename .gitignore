@@ -3,3 +3,7 @@ example/
 .bundle
 bin
 .secrets.yml
+ci/cre.yml
+tmp/
+.idea
+.byebug_history

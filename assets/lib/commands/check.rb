@@ -20,5 +20,5 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   command = Commands::Check.new
-  puts JSON.generate(command.output)
+  puts JSON.generate(command.output.first)  # taking first because pull requests are independent from each other
 end

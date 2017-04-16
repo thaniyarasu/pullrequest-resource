@@ -10,14 +10,18 @@ class Status
   end
 
   def create!
-    Octokit.create_status(
-      @repo.name,
-      @sha,
-      @state,
-      context: "concourse-ci/#{@context}",
-      description: "Concourse CI build #{@state}",
-      target_url: target_url
-    )
+    if Commands::Base.bb
+      #TODO : update status and lock PR
+    else
+      Octokit.create_status(
+          @repo.name,
+          @sha,
+          @state,
+          context: "concourse-ci/#{@context}",
+          description: "Concourse CI build #{@state}",
+          target_url: target_url
+      )
+    end
   end
 
   private

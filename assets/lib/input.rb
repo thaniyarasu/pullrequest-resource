@@ -1,5 +1,6 @@
 require 'json'
 require 'ostruct'
+require 'json'
 
 class Input
   class Params < OpenStruct
@@ -22,6 +23,7 @@ class Input
     @instance = new(payload: payload) if payload
     @instance ||= begin
                     payload = JSON.parse(ARGF.read)
+                    payload ||= JSON.parse(File.read("ci/job.json")) if ENV['DEV']
                     new(payload: payload)
                   end
   end

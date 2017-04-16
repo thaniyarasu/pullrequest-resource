@@ -11,13 +11,13 @@ module Commands
 
     def initialize(destination:, input: Input.instance)
       @destination = destination
-
+      @destination ||= '.' if ENV['DEV']
       super(input: input)
     end
 
     def output
       check_defaults!
-      path = File.join(destination, params['path'])
+      path = File.join(destination, params.path)
       raise %(`path` "#{params['path']}" does not exist) unless File.exist?(path)
 
       if params.comment
@@ -39,7 +39,7 @@ module Commands
       if id.empty?
         version = { 'ref' => sha }
       else
-        pr = PullRequest.from_github(repo: repo, id: id)
+        pr = PullRequest.from_git_api(repo: repo, id: id)
         metadata << { 'name' => 'url', 'value' => pr.url }
         version = { 'pr' => id, 'ref' => sha }
       end
@@ -49,30 +49,47 @@ module Commands
       contextes = [contextes] unless contextes.is_a?(Array)
 
       contextes.each do |context|
-        Status.new(
-          state: params.status,
-          atc_url: atc_url,
-          sha: sha,
-          repo: repo,
-          context: context
-        ).create!
+        attr = {
+            state: params.status,
+            atc_url: atc_url,
+            sha: sha,
+            repo: repo,
+            context: context
+        }
+        Status.new(attr).create!
       end
 
       if params.comment
         comment_path = File.join(destination, params.comment)
         comment = File.read(comment_path, encoding: Encoding::UTF_8)
-        Octokit.add_comment(input.source.repo, id, comment)
+        if Commands::Base.bb
+          #TODO: add_comment_to_bitbucket
+        else
+          Octokit.add_comment(input.source.repo, id, comment)
+        end
         metadata << { 'name' => 'comment', 'value' => comment }
       end
 
       if params.merge.method
-        commit_msg = if params.merge.commit_msg
-                       commit_path = File.join(destination, params.merge.commit_msg)
-                       File.read(commit_path, encoding: Encoding::UTF_8)
-                     else
-                       ''
+        commit_msg = ''
+        if params.merge.commit_msg
+          commit_path = File.join(destination, params.merge.commit_msg)
+          commit_msg = File.read(commit_path, encoding: Encoding::UTF_8)
         end
-        Octokit.merge_pull_request(input.source.repo, id, commit_msg, merge_method: params.merge.method, accept: 'application/vnd.github.polaris-preview+json')
+
+        if Commands::Base.bb
+          begin
+            attr = {close_source_branch: true, message: "merged by Concourse CI", merge_strategy: params.merge.method}
+            Commands::Base.bb.repos.pull_request.merge(Commands::Base.user, Commands::Base.repo, id, attr)
+          rescue Exception => e
+            STDERR.puts e.message
+            STDERR.puts e.backtrace.inspect
+            Commands::Base.bb.repos.pull_request.decline(Commands::Base.user, Commands::Base.repo, id)
+            #TODO: add description for decline
+          end
+        else
+          Octokit.merge_pull_request(input.source.repo, id, commit_msg, merge_method: params.merge.method, accept: 'application/vnd.github.polaris-preview+json')
+        end
         metadata << { 'name' => 'merge', 'value' => params.merge.method }
         metadata << { 'name' => 'merge_commit_msg', 'value' => commit_msg }
       end

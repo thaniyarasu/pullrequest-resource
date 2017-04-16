@@ -19,6 +19,28 @@ resource_types:
     repository: jtarchie/pr
 ```
 
+For bitbucket example:
+
+```yaml
+
+resource_types:
+- name: rt0
+  type: docker-image
+  source:
+    repository: thaniyarasu/pr
+```
+
+```yaml
+resources:
+- name: r0
+  type: rt0
+  source:
+    bitbucket: true
+    repo: {{bb-repo}}
+    user: {{bb-un}}
+    access_token: {{bb-to}}
+
+```
 ## Source Configuration
 
 * `repo`: *Required.* The repo name on github.
@@ -76,6 +98,12 @@ marked with that specific label. It is case insensitive.
 * `git_config`: *Optional*. If specified as (list of pairs `name` and `value`)
   it will configure git global options, setting each name with each value.
 
+* `bitbucket`: *Optional.* enable bitbucket
+    Example: `true|false`
+
+* `user`: *Required.* for bitbucket.
+    Example: `username`
+    
   This can be useful to set options like `credential.helper` or similar.
 
   See the [`git-config(1)` manual page](https://www.kernel.org/pub/software/scm/git/docs/git-config.html)
@@ -166,4 +194,6 @@ Requires `ruby` to be installed.
   bundle install
   bundle exec rspec
   ```
+
+reference : dummy resource
 

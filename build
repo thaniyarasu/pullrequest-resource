@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e -x
+
+fly -t t0 login -c http://localhost:8080/
+
+docker build -t thaniyarasu/pr .
+docker push thaniyarasu/pr
+#echo 'y' | fly -t t0 dp -p pl0
+echo 'y' | fly -t t0 sp -p pl0 -c ci/pl0.yaml --load-vars-from ci/cre.yml
+fly -t t0 up -p pl0
+fly -t t0 tj -j pl0/j0
+fly -t t0 w -j pr0/j0
+#fly -t t0 hijack -j pr0/j0 -c pr0/r0 bash

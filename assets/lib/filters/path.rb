@@ -14,7 +14,11 @@ module Filters
       return @pull_requests if paths.empty? && ignore_paths.empty?
 
       @memoized ||= @pull_requests.select do |pr|
-        files = Octokit.pull_request_files(@input.source.repo, pr.id)
+        files = if Commands::Base.bb
+                  #TODO : filter pull request based on changed file names , not yet supported by bitbucket
+                else
+                  Octokit.pull_request_files(@input.source.repo, pr.id)
+                end
         unless paths.empty?
           files.select! do |file|
             paths.find do |path|

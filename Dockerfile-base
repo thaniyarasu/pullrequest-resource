@@ -1,0 +1,6 @@
+#docker build -t thaniyarasu/pr-base . -f Dockerfile-base
+FROM ruby:alpine
+
+RUN apk add --update perl jq git openssh-client ruby-json
+RUN apk add --update build-base libxslt-dev libxml2-dev
+RUN gem install nokogiri

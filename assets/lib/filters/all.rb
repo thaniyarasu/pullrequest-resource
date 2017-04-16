@@ -8,9 +8,16 @@ module Filters
     end
 
     def pull_requests
-      @pull_requests ||= Octokit.pulls(input.source.repo, pull_options).map do |pr|
-        PullRequest.new(pr: pr)
-      end
+      @pull_requests = if Commands::Base.bb
+                         tmp = Commands::Base.bb.repos.pull_request.list(Commands::Base.user, Commands::Base.repo).to_hash["values"]
+                         tmp.map do |pr|
+                           PullRequest.new(pr: pr)
+                         end
+                       else
+                         Octokit.pulls(input.source.repo, pull_options).map do |pr|
+                           PullRequest.new(pr: pr)
+                         end
+                       end
     end
 
     private

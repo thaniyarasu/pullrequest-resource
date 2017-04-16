@@ -1,0 +1,3 @@
+bb-un: username        # bitbucket username
+bb-to: token           # bitbucket App Passwords Token
+bb-repo: user/repo

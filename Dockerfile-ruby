@@ -1,0 +1,15 @@
+#docker build -t thaniyarasu/pr . -f Dockerfile-ruby
+
+FROM ruby:2.4.1
+RUN apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y
+RUN apt-get install -y jq nano ca-certificates apt-utils
+
+RUN gem install octokit httpclient --no-rdoc --no-ri
+RUN gem install nokogiri --no-rdoc --no-ri
+COPY bitbucket_rest_api-0.1.7.gem /
+RUN gem install /bitbucket_rest_api-0.1.7.gem --no-rdoc --no-ri
+RUN rm /bitbucket_rest_api-0.1.7.gem
+RUN gem clean
+RUN rm -rf /opt/resource
+ADD assets /opt/resource
+RUN chmod +x /opt/resource/*
