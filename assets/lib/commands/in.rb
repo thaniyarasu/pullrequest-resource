@@ -44,16 +44,14 @@ module Commands
           end
         end
       end
+      {version: {ref: ref, pr: @pr.id.to_s}, metadata: [{name: 'url', value: @pr.url}] }
     end
-
-    {
-        'version' => {'ref' => ref, 'pr' => @pr.id.to_s},
-        'metadata' => [{'name' => 'url', 'value' => @pr.url}]
-    }
-  end
+    # {
+    #     'version' => {'ref' => ref, 'pr' => @pr.id.to_s},
+    #     'metadata' => [{'name' => 'url', 'value' => @pr.url}]
+    # }
 
     private
-
     def get_pull_reqs
       pr0 ||= if Commands::Base.bb
                 Commands::Base.bb.repos.pull_request.get(Commands::Base.user, Commands::Base.repo, input.version.pr)
